@@ -32,20 +32,7 @@ public class TestMessageHandler extends BaseMessageHandler<TestMessage> {
 }
 ```
 
-3. Create handler
-
-```java
-public class TestMessageHandler extends BaseMessageHandler<TestMessage> {
-
-    @Override
-    public void handle(TestMessage message) {
-        System.out.println(message.getUsername());
-    }
-
-}
-```
-
-4. Create client
+3. Create client
 
 ```java
 public class Client {
@@ -59,7 +46,7 @@ public class Client {
 }
 ```
 
-5. Create sender
+4. Create sender
 
 ```java
 public class Sender {
