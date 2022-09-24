@@ -9,6 +9,11 @@ public interface IMessageHandler<T extends IMessage> {
      */
     Class<? extends IMessage> getMessageClass();
 
+    /**
+     * Обработать сообщение
+     *
+     * @param message сообщение
+     */
     void handle(T message);
 
 }

@@ -15,6 +15,7 @@
 public class TestMessage extends BaseMessage {
 
     private String username;
+    private int balance;
 
 }
 ```
@@ -27,6 +28,7 @@ public class TestMessageHandler extends BaseMessageHandler<TestMessage> {
     @Override
     public void handle(TestMessage message) {
         System.out.println(message.getUsername());
+        System.out.println(message.getBalance());
     }
 
 }
@@ -38,10 +40,21 @@ public class TestMessageHandler extends BaseMessageHandler<TestMessage> {
 public class Client {
 
     public static void main(String[] args) {
-        MessagingService messagingService = new RabbitMessagingService(); //Rabbitmq or redis
+        Config config = new Config();
+        config.setCodec(new JsonJacksonCodec());
+        config.setThreads(8);
+        config.setNettyThreads(8);
+        config.useSingleServer()
+                .setPassword("sweetroyale")
+                .setAddress("redis://localhost:6379");
 
-        messagingService.addListener("lobby-1");
-        messagingService.addHandler(new TestMessageHandler(), "lobby-1");
+        RedissonClient redissonClient = Redisson.create(config);
+
+        IBroker broker = new RedissonBroker(redissonClient);
+
+        MessagingService messagingService = new MessagingServiceImpl(broker);
+        messagingService.addListener("proxy-1");
+        messagingService.addHandler(new TestMessageHandle(), "proxy-1");
     }
 }
 ```
@@ -52,9 +65,19 @@ public class Client {
 public class Sender {
 
     public static void main(String[] args) {
-        MessagingService messagingService = new RabbitMessagingService();
+        Config config = new Config();
+        config.setCodec(new JsonJacksonCodec());
+        config.setThreads(8);
+        config.setNettyThreads(8);
+        config.useSingleServer()
+                .setPassword("sweetroyale")
+                .setAddress("redis://localhost:6379");
 
-        messagingService.publish(new TestMessage("sweetroyale"), "lobby-1");
+        RedissonClient redissonClient = Redisson.create(config);
+
+        IBroker broker = new RedissonBroker(redissonClient);
+        MessagingService messagingService = new MessagingServiceImpl(broker);
+        messagingService.publish(new TestMessage("sweetroyale", 100), "proxy-1");
     }
 }
 ```
@@ -65,14 +88,22 @@ or Client+Sender
 public class ClientSender {
 
     public static void main(String[] args) {
-        MessagingService messagingService = new RabbitMessagingService();
+        Config config = new Config();
+        config.setCodec(new JsonJacksonCodec());
+        config.setThreads(8);
+        config.setNettyThreads(8);
+        config.useSingleServer()
+                .setPassword("sweetroyale")
+                .setAddress("redis://localhost:6379");
 
-        messagingService.addListener("lobby-1");
-        messagingService.addHandler(new TestMessageHandler(), "lobby-1");
+        RedissonClient redissonClient = Redisson.create(config);
 
-        messagingService.publish(new TestMessage("sweetroyale"), "proxy-1");
+        IBroker broker = new RedissonBroker(redissonClient);
+        MessagingService messagingService = new MessagingServiceImpl(broker);
+        messagingService.publish(new TestMessage("sweetroyale", 100), "proxy-1");
+
+        messagingService.addListener("proxy-1");
+        messagingService.addHandler(new TestMessageHandle(), "proxy-1");
     }
 }
 ```
-
-I went to bed, good night.

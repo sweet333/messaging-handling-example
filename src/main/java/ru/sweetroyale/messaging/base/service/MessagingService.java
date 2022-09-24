@@ -27,6 +27,6 @@ public interface MessagingService {
      *
      * @param channels каналы
      */
-    void addListener(@NonNull String... channels);
+    void addListener(String... channels);
 
 }
